@@ -665,9 +665,26 @@ class Quantity(np.ndarray):
 
         # Same for inputs, but here also convert if necessary.
         arrays = []
-        for input_, converter in zip(inputs, converters):
-            input_ = getattr(input_, "value", input_)
-            arrays.append(converter(input_) if converter else input_)
+        try:
+            for input_, converter in zip(inputs, converters):
+                input_ = getattr(input_, "value", input_)
+                arrays.append(converter(input_) if converter else input_)
+        except (TypeError, ValueError, AttributeError) as exc:
+            ignored_ufunc = (
+                None,
+                np.ndarray.__array_ufunc__,
+                type(self).__array_ufunc__,
+            )
+
+            inputs_and_outputs = inputs + kwargs.get("out", ())
+
+            if not all(
+                getattr(type(io), "__array_ufunc__", None) in ignored_ufunc
+                for io in inputs_and_outputs
+            ):
+                return NotImplemented
+
+            raise exc
 
         # Call our superclass's __array_ufunc__
         result = super().__array_ufunc__(function, method, *arrays, **kwargs)
