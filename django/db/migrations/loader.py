@@ -93,11 +93,14 @@ class MigrationLoader:
                 # Force a reload if it's already loaded (tests need this)
                 if was_loaded:
                     reload(module)
-            self.migrated_apps.add(app_config.label)
             migration_names = {
                 name for _, name, is_pkg in pkgutil.iter_modules(module.__path__)
                 if not is_pkg and name[0] not in '_~'
             }
+            if getattr(module, '__file__', None) is None and not migration_names:
+                self.unmigrated_apps.add(app_config.label)
+                continue
+            self.migrated_apps.add(app_config.label)
             # Load migrations
             for migration_name in migration_names:
                 migration_path = '%s.%s' % (module_name, migration_name)
