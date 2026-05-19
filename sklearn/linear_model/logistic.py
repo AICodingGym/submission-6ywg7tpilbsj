@@ -2181,7 +2181,11 @@ class LogisticRegressionCV(LogisticRegression, BaseEstimator,
                 self.C_.append(np.mean(self.Cs_[best_indices_C]))
 
                 best_indices_l1 = best_indices // len(self.Cs_)
-                self.l1_ratio_.append(np.mean(l1_ratios_[best_indices_l1]))
+                if self.l1_ratios is None:
+                    self.l1_ratio_.append(None)
+                else:
+                    self.l1_ratio_.append(
+                        np.mean(np.asarray(l1_ratios_)[best_indices_l1]))
 
             if multi_class == 'multinomial':
                 self.C_ = np.tile(self.C_, n_classes)
