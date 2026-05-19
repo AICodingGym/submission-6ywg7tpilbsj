@@ -541,3 +541,18 @@ class PycLoaderTests(MigrationTestBase):
             )
             with self.assertRaisesRegex(ImportError, msg):
                 MigrationLoader(connection)
+
+    @override_settings(MIGRATION_MODULES={
+        "migrations": "migrations.test_migrations_namespace_package",
+    })
+    @modify_settings(INSTALLED_APPS={'append': 'basic'})
+    def test_load_namespace_package_without_init(self):
+        """
+        MigrationLoader can load migrations from a namespace package
+        without an __init__.py file.
+        """
+        migration_loader = MigrationLoader(connection)
+        self.assertIn(
+            ("migrations", "0001_initial"),
+            migration_loader.disk_migrations,
+        )
