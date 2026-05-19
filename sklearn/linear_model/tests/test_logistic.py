@@ -1738,3 +1738,21 @@ def test_penalty_none(solver):
         "LogisticRegressionCV",
         lr.fit, X, y
     )
+
+
+def test_logistic_regression_cv_refit_false_multiclass_auto():
+    rng = np.random.RandomState(29)
+    X = rng.normal(size=(100, 3))
+    y = np.array([0, 1] * 50)
+
+    clf = LogisticRegressionCV(
+        cv=5,
+        solver='liblinear',
+        tol=1e-2,
+        refit=False,
+        multi_class='auto',
+    )
+    clf.fit(X, y)
+
+    assert clf.coef_.shape == (1, X.shape[1])
+    assert clf.C_.shape == (1,)
